@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "dasc_robots"
+version = "0.1.0"
+description = ""
+authors = ["Mitchell Black <6lack.mitchell@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.23.1"
+empy = "^3.3.4"
+catkin-pkg = "^0.5.2"
+lark = "^1.1.2"
+PyYAML = "^6.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

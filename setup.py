@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'talker = dasc_robot_py.examples.test_run.py:main',
+            'talker = dasc_robot_py.test_run:main',
         ],
     },
 )

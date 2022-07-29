@@ -281,7 +281,7 @@ class Robot:
         alt = ctypes.c_double(origin[2])
 
         self._lib.setGPSGlobalOrigin(self._obj, lat, lon, alt)
-
+        
     def set_arg_res_types(self) -> None:
         """Sets the argument and return types for the Robot library."""
         self._lib.init.argtypes = [ctypes.c_char_p, ctypes.c_uint8]

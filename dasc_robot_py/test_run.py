@@ -3,9 +3,19 @@
 
 
 from dasc_robots.robot import Robot
+from dasc_robots.ros_functions import *
 import rclpy
 
 def main(args=None):
-    rclpy.init(args=args)
+    # rclpy.init(args=args)
 
-    robot_1 = Robot('rover1', 1)
+    ros_init("test_run")
+
+    robot1 = Robot("rover1", 1)
+    robot2 = Robot("rover2", 1)
+    print("Robot Initialized")
+
+    robot1.init()
+    robot2.init()
+
+    start_ros_nodes([robot1, robot2])

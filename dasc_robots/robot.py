@@ -12,6 +12,9 @@ def load_library(filename: str = 'libdasc_robot_lib.so',#'./lib/libdascBots.a',
     else:
         return ctypes.cdll.LoadLibrary(filename)
 
+l_mode = dict(winmode=0) if platform.python_version() >= '3.8' else dict()
+path = '/root/px4_ros_com_ros2/install/dasc_robot/lib/dasc_robot//libdasc_robot_lib.so'  #'/root/px4_ros_com_ros2/src/robot-framework-py/dasc_robots/lib/libdasc_robot_lib.so'
+robot_lib = load_library(path, l_mode)
 
 class Robot:
     """Interface to C++ DASCRobot object."""
@@ -21,14 +24,21 @@ class Robot:
                  robot_id: int):
         """Initializes Robot in C++ and obtains corresponding object functions."""
         # From Python 3.8 onwards, there is a reported bug in CDLL.__init__()
-        l_mode = dict(winmode=0) if platform.python_version() >= '3.8' else dict()
-        path = '/root/px4_ros_com_ros2/src/robot-framework-py/dasc_robots/lib/libdasc_robot_lib.so'
-        self._lib = load_library(path, l_mode)
+        self._obj = robot_lib.make_robot_object(name, ctypes.c_uint8(robot_id))
+        print(f"python: { self._obj }")
         self.set_arg_res_types()
 
-        # Initialize robot
-        # self._obj = self._lib.init(ctypes.c_char_p(name), ctypes.c_uint8(robot_id))
-        self._obj = self._lib.init(ctypes.c_char_p(bytes(name.encode())), ctypes.c_uint8(robot_id))
+    def init(self) -> bool:
+        """Initializes the robot.
+
+        Arguments:
+            None
+
+        Returns:
+            Success / error
+
+        """
+        return robot_lib.init(self._obj)
 
     def arm(self) -> bool:
         """Arms the robot.
@@ -40,7 +50,7 @@ class Robot:
             Success / error
 
         """
-        return self._lib.arm(self._obj)
+        return robot_lib.arm(self._obj)
 
     def disarm(self) -> bool:
         """Disarms the robot.
@@ -52,7 +62,7 @@ class Robot:
             None
 
         """
-        return self._lib.disarm(self._obj)
+        return robot_lib.disarm(self._obj)
 
     def cmd_offboard_mode(self) -> bool:
         """Sets the robot control to offboard mode.
@@ -63,7 +73,7 @@ class Robot:
         Returns
             Success / error
             """
-        return self._lib.cmdOffboardMode(self._obj)
+        return robot_lib.cmdOffboardMode(self._obj)
 
     def get_world_position(self) -> npt.NDArray:
         """Retrieves the world position from the robot.
@@ -75,7 +85,7 @@ class Robot:
             x, y, z position in world coordinates
 
         """
-        return np.array(self._lib.getWorldPosition(self._obj))
+        return np.array(robot_lib.getWorldPosition(self._obj))
 
     def get_world_velocity(self) -> npt.NDArray:
         """Retrieves the world velocity from the robot.
@@ -87,7 +97,7 @@ class Robot:
             vx, vy, vz velocity in world coordinates
 
         """
-        return np.array(self._lib.getWorldVelocity(self._obj))
+        return np.array(robot_lib.getWorldVelocity(self._obj))
 
     def get_world_acceleration(self) -> npt.NDArray:
         """Retrieves the world acceleration from the robot.
@@ -99,7 +109,7 @@ class Robot:
             ax, ay, az acceleration in world coordinates
 
         """
-        return np.array(self._lib.getWorldAcceleration(self._obj))
+        return np.array(robot_lib.getWorldAcceleration(self._obj))
 
     def get_body_acceleration(self) -> npt.NDArray:
         """Retrieves the body acceleration from the robot.
@@ -111,7 +121,7 @@ class Robot:
             ax, ay, az acceleration in body coordinates
 
         """
-        return np.array(self._lib.getBodyAcceleration(self._obj))
+        return np.array(robot_lib.getBodyAcceleration(self._obj))
 
     def get_body_rate(self) -> npt.NDArray:
         """Retrieves the body angular rate from the robot.
@@ -123,7 +133,7 @@ class Robot:
             wx, wy, wz body angular rates
 
         """
-        return np.array(self._lib.getBodyRate(self._obj))
+        return np.array(robot_lib.getBodyRate(self._obj))
 
     def emergency_stop(self) -> None:
         """Brings the robot to an emergency stop.
@@ -135,7 +145,7 @@ class Robot:
             None
 
         """
-        return self._lib.emergencyStop(self._obj)
+        return robot_lib.emergencyStop(self._obj)
 
     def get_body_quaternion(self,
                             blocking: bool = False) -> npt.NDArray:
@@ -149,7 +159,7 @@ class Robot:
 
         """
         quaternion_array = (4 * ctypes.c_double)()
-        self._lib.getBodyQuaternion(self._obj, quaternion_array, blocking)
+        robot_lib.getBodyQuaternion(self._obj, quaternion_array, blocking)
 
         return np.array(quaternion_array)
 
@@ -173,7 +183,7 @@ class Robot:
         else:
             raise ValueError("Unknown vehicle control mode!")
 
-        return self._lib.setCmdMode(self._obj, cmode)
+        return robot_lib.setCmdMode(self._obj, cmode)
 
     def command_position(self,
                          pos: npt.NDArray) -> bool:
@@ -190,7 +200,7 @@ class Robot:
         y = ctypes.c_double(pos[1])
         z = ctypes.c_double(pos[2])
 
-        return self._lib.cmdWorldPosition(self._obj, x, y, z, 0, 0)
+        return robot_lib.cmdWorldPosition(self._obj, x, y, z, 0, 0)
 
     def command_velocity(self,
                          vel: npt.NDArray) -> bool:
@@ -207,7 +217,7 @@ class Robot:
         vy = ctypes.c_double(vel[1])
         vz = ctypes.c_double(vel[2])
 
-        return self._lib.cmdWorldVelocity(self._obj, vx, vy, vz, 0, 0)
+        return robot_lib.cmdWorldVelocity(self._obj, vx, vy, vz, 0, 0)
 
     def command_acceleration(self,
                              acc: npt.NDArray) -> bool:
@@ -224,7 +234,7 @@ class Robot:
         ay = ctypes.c_double(acc[1])
         az = ctypes.c_double(acc[2])
 
-        return self._lib.cmdWorldAcceleration(self._obj, ax, ay, az, 0, 0)
+        return robot_lib.cmdWorldAcceleration(self._obj, ax, ay, az, 0, 0)
 
     def command_atttitude(self,
                           quaternions: npt.NDArray,
@@ -244,7 +254,7 @@ class Robot:
         qy = ctypes.c_double(quaternions[2])
         qz = ctypes.c_double(quaternions[2])
 
-        return self._lib.cmdAttitude(self._obj, qw, qx, qy, qz, ctypes.c_double(thrust))
+        return robot_lib.cmdAttitude(self._obj, qw, qx, qy, qz, ctypes.c_double(thrust))
 
     def command_angular_rates(self,
                               rates: npt.NDArray,
@@ -263,7 +273,7 @@ class Robot:
         pitch = ctypes.c_double(rates[1])
         yaw = ctypes.c_double(rates[2])
 
-        return self._lib.cmdAttitude(self._obj, roll, pitch, yaw, ctypes.c_double(thrust))
+        return robot_lib.cmdAttitude(self._obj, roll, pitch, yaw, ctypes.c_double(thrust))
 
     def set_gps_origin(self,
                        origin: npt.NDArray) -> None:
@@ -280,57 +290,57 @@ class Robot:
         lon = ctypes.c_double(origin[1])
         alt = ctypes.c_double(origin[2])
 
-        self._lib.setGPSGlobalOrigin(self._obj, lat, lon, alt)
+        robot_lib.setGPSGlobalOrigin(self._obj, lat, lon, alt)
         
     def set_arg_res_types(self) -> None:
         """Sets the argument and return types for the Robot library."""
-        self._lib.init.argtypes = [ctypes.c_char_p, ctypes.c_uint8]
-        self._lib.init.restype = ctypes.c_void_p
+        # robot_lib.init.argtypes = [ctypes.c_char_p, ctypes.c_uint8]
+        robot_lib.init.restype = ctypes.c_void_p
 
-        self._lib.arm.argtypes = [ctypes.c_void_p]
-        self._lib.arm.restype = ctypes.c_bool
-        self._lib.disarm.argtypes = [ctypes.c_void_p]
-        self._lib.disarm.restype = ctypes.c_bool
-        self._lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
-        self._lib.cmdOffboardMode.restype = ctypes.c_bool
-        self._lib.getWorldPosition.argtypes = [ctypes.c_void_p]
-        self._lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
-        self._lib.getWorldVelocity.argtypes = [ctypes.c_void_p]
-        self._lib.getWorldVelocity.restype = ctypes.POINTER(ctypes.c_double)
-        self._lib.getWorldAcceleration.argtypes = [ctypes.c_void_p]
-        self._lib.getWorldAcceleration.restype = ctypes.POINTER(ctypes.c_double)
-        self._lib.getBodyAcceleration.argtypes = [ctypes.c_void_p]
-        self._lib.getBodyAcceleration.restype  = ctypes.POINTER(ctypes.c_double)
-        self._lib.getBodyRate.argtypes = [ctypes.c_void_p]
-        self._lib.getBodyRate.restype = ctypes.POINTER(ctypes.c_double)
-        self._lib.emergencyStop.argtypes = [ctypes.c_void_p]
-        self._lib.emergencyStop.restype = ctypes.c_void_p
+        robot_lib.arm.argtypes = [ctypes.c_void_p]
+        robot_lib.arm.restype = ctypes.c_bool
+        robot_lib.disarm.argtypes = [ctypes.c_void_p]
+        robot_lib.disarm.restype = ctypes.c_bool
+        robot_lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
+        robot_lib.cmdOffboardMode.restype = ctypes.c_bool
+        robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
+        robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
+        robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]
+        robot_lib.getWorldVelocity.restype = ctypes.POINTER(ctypes.c_double)
+        robot_lib.getWorldAcceleration.argtypes = [ctypes.c_void_p]
+        robot_lib.getWorldAcceleration.restype = ctypes.POINTER(ctypes.c_double)
+        robot_lib.getBodyAcceleration.argtypes = [ctypes.c_void_p]
+        robot_lib.getBodyAcceleration.restype  = ctypes.POINTER(ctypes.c_double)
+        robot_lib.getBodyRate.argtypes = [ctypes.c_void_p]
+        robot_lib.getBodyRate.restype = ctypes.POINTER(ctypes.c_double)
+        robot_lib.emergencyStop.argtypes = [ctypes.c_void_p]
+        robot_lib.emergencyStop.restype = ctypes.c_void_p
 
         # Functions with arguments
-        self._lib.getBodyQuaternion.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_bool]
-        self._lib.getBodyQuaternion.restype = ctypes.c_bool
-        self._lib.setCmdMode.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-        self._lib.setCmdMode.restype = ctypes.c_bool
-        self._lib.cmdWorldPosition.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.getBodyQuaternion.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_bool]
+        robot_lib.getBodyQuaternion.restype = ctypes.c_bool
+        robot_lib.setCmdMode.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+        robot_lib.setCmdMode.restype = ctypes.c_bool
+        robot_lib.cmdWorldPosition.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                               ctypes.c_double, ctypes.c_double]
-        self._lib.cmdWorldPosition.restype = ctypes.c_bool
-        self._lib.cmdWorldVelocity.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.cmdWorldPosition.restype = ctypes.c_bool
+        robot_lib.cmdWorldVelocity.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                               ctypes.c_double, ctypes.c_double]
-        self._lib.cmdWorldVelocity.restype = ctypes.c_bool
-        self._lib.cmdLocalVelocity.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.cmdWorldVelocity.restype = ctypes.c_bool
+        robot_lib.cmdLocalVelocity.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                               ctypes.c_double, ctypes.c_double]
-        self._lib.cmdLocalVelocity.restype = ctypes.c_bool
-        self._lib.cmdWorldAcceleration.argtypes = [ctypes.c_void_p,ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.cmdLocalVelocity.restype = ctypes.c_bool
+        robot_lib.cmdWorldAcceleration.argtypes = [ctypes.c_void_p,ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                                   ctypes.c_double, ctypes.c_double]
-        self._lib.cmdWorldAcceleration.restype = ctypes.c_bool
-        self._lib.cmdAttitude.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.cmdWorldAcceleration.restype = ctypes.c_bool
+        robot_lib.cmdAttitude.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                          ctypes.c_double, ctypes.c_double]
-        self._lib.cmdAttitude.restype = ctypes.c_bool
-        self._lib.cmdRates.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        robot_lib.cmdAttitude.restype = ctypes.c_bool
+        robot_lib.cmdRates.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,
                                       ctypes.c_double]
-        self._lib.cmdRates.restype = ctypes.c_bool
-        self._lib.setGPSGlobalOrigin.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double]
-        self._lib.setGPSGlobalOrigin.restype = ctypes.c_void_p
+        robot_lib.cmdRates.restype = ctypes.c_bool
+        robot_lib.setGPSGlobalOrigin.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double]
+        robot_lib.setGPSGlobalOrigin.restype = ctypes.c_void_p
 
 
 

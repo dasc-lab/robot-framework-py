@@ -64,7 +64,7 @@ def start_ros_nodes(robots: List) -> None: #def start_ros_nodes(lib: ctypes.CDLL
     robot_array = RobotArrayNr(*robot_objs)
 
     # Call to C++ library
-    _lib.startNodes(robot_array, ctypes.c_int(nr))
+    return _lib.startNodes(robot_array, ctypes.c_int(nr))
 
 
 def close_ros_nodes() -> None:

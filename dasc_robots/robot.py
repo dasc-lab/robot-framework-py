@@ -13,13 +13,13 @@ def load_library(filename: str = 'libdasc_robot_lib.so',#'./lib/libdascBots.a',
         return ctypes.cdll.LoadLibrary(filename)
 
 l_mode = dict(winmode=0) if platform.python_version() >= '3.8' else dict()
-path = '/root/px4_ros_com_ros2/install/dasc_robot/lib/dasc_robot//libdasc_robot_lib.so'  #'/root/px4_ros_com_ros2/src/robot-framework-py/dasc_robots/lib/libdasc_robot_lib.so'
+path = '/root/px4_ros_com_ros2/install/dasc_robot/lib/dasc_robot/libdasc_robot_lib.so'  #'/root/px4_ros_com_ros2/src/robot-framework-py/dasc_robots/lib/libdasc_robot_lib.so'
 robot_lib = load_library(path, l_mode)
 
-class Thread_Executor:
+# class Thread_Executor:
 
-    def __init__(self):
-        self._obj = robot_lib.initialize_threads()
+#     def __init__(self):
+#         self._obj = robot_lib.initialize_threads()
 
 class Robot:
     """Interface to C++ DASCRobot object."""
@@ -90,7 +90,10 @@ class Robot:
             x, y, z position in world coordinates
 
         """
-        return np.array(robot_lib.getWorldPosition(self._obj))
+        pos_array = (3 * ctypes.c_double)()
+        robot_lib.getWorldPosition(self._obj, pos_array)
+        return np.array(pos_array)
+
 
     def get_world_velocity(self) -> npt.NDArray:
         """Retrieves the world velocity from the robot.
@@ -102,7 +105,9 @@ class Robot:
             vx, vy, vz velocity in world coordinates
 
         """
-        return np.array(robot_lib.getWorldVelocity(self._obj))
+        vel_array = (3 * ctypes.c_double)()
+        robot_lib.getWorldVelocity(self._obj, vel_array)
+        return np.array(vel_array)
 
     def get_world_acceleration(self) -> npt.NDArray:
         """Retrieves the world acceleration from the robot.
@@ -114,7 +119,9 @@ class Robot:
             ax, ay, az acceleration in world coordinates
 
         """
-        return np.array(robot_lib.getWorldAcceleration(self._obj))
+        acc_array = (3 * ctypes.c_double)()
+        robot_lib.getWorldAcceleration(self._obj, acc_array)
+        return np.array(acc_array)
 
     def get_body_acceleration(self) -> npt.NDArray:
         """Retrieves the body acceleration from the robot.
@@ -126,7 +133,9 @@ class Robot:
             ax, ay, az acceleration in body coordinates
 
         """
-        return np.array(robot_lib.getBodyAcceleration(self._obj))
+        acc_array = (3 * ctypes.c_double)()
+        robot_lib.getBodyAcceleration(self._obj, acc_array)
+        return np.array(acc_array)
 
     def get_body_rate(self) -> npt.NDArray:
         """Retrieves the body angular rate from the robot.
@@ -138,7 +147,9 @@ class Robot:
             wx, wy, wz body angular rates
 
         """
-        return np.array(robot_lib.getBodyRate(self._obj))
+        body_rate_array = (3 * ctypes.c_double)()
+        robot_lib.getBodyRate(self._obj, body_rate_array)
+        return np.array(body_rate_array)
 
     def emergency_stop(self) -> None:
         """Brings the robot to an emergency stop.
@@ -310,22 +321,22 @@ class Robot:
         robot_lib.disarm.restype = ctypes.c_bool
         robot_lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
         robot_lib.cmdOffboardMode.restype = ctypes.c_bool
-        robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
-        robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
-        robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]
-        robot_lib.getWorldVelocity.restype = ctypes.POINTER(ctypes.c_double)
-        robot_lib.getWorldAcceleration.argtypes = [ctypes.c_void_p]
-        robot_lib.getWorldAcceleration.restype = ctypes.POINTER(ctypes.c_double)
-        robot_lib.getBodyAcceleration.argtypes = [ctypes.c_void_p]
-        robot_lib.getBodyAcceleration.restype  = ctypes.POINTER(ctypes.c_double)
-        robot_lib.getBodyRate.argtypes = [ctypes.c_void_p]
-        robot_lib.getBodyRate.restype = ctypes.POINTER(ctypes.c_double)
+        # robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
+        # robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
+        # robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]
+        # robot_lib.getWorldVelocity.restype = ctypes.POINTER(ctypes.c_double)
+        # robot_lib.getWorldAcceleration.argtypes = [ctypes.c_void_p]
+        # robot_lib.getWorldAcceleration.restype = ctypes.POINTER(ctypes.c_double)
+        # robot_lib.getBodyAcceleration.argtypes = [ctypes.c_void_p]
+        # robot_lib.getBodyAcceleration.restype  = ctypes.POINTER(ctypes.c_double)
+        # robot_lib.getBodyRate.argtypes = [ctypes.c_void_p]
+        # robot_lib.getBodyRate.restype = ctypes.POINTER(ctypes.c_double)
         robot_lib.emergencyStop.argtypes = [ctypes.c_void_p]
         robot_lib.emergencyStop.restype = ctypes.c_void_p
 
         # Functions with arguments
-        robot_lib.getBodyQuaternion.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_bool]
-        robot_lib.getBodyQuaternion.restype = ctypes.c_bool
+        # robot_lib.getBodyQuaternion.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_double), ctypes.c_bool]
+        # robot_lib.getBodyQuaternion.restype = ctypes.c_bool
         robot_lib.setCmdMode.argtypes = [ctypes.c_void_p, ctypes.c_uint]
         robot_lib.setCmdMode.restype = ctypes.c_bool
         robot_lib.cmdWorldPosition.argtypes = [ctypes.c_void_p, ctypes.c_double, ctypes.c_double, ctypes.c_double,

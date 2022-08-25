@@ -16,11 +16,6 @@ l_mode = dict(winmode=0) if platform.python_version() >= '3.8' else dict()
 path = '/root/px4_ros_com_ros2/install/dasc_robot/lib/dasc_robot/libdasc_robot_lib.so'  #'/root/px4_ros_com_ros2/src/robot-framework-py/dasc_robots/lib/libdasc_robot_lib.so'
 robot_lib = load_library(path, l_mode)
 
-# class Thread_Executor:
-
-#     def __init__(self):
-#         self._obj = robot_lib.initialize_threads()
-
 class Robot:
     """Interface to C++ DASCRobot object."""
 
@@ -215,8 +210,10 @@ class Robot:
         x = ctypes.c_double(pos[0])
         y = ctypes.c_double(pos[1])
         z = ctypes.c_double(pos[2])
+        yaw = ctypes.c_double(pos[3])
+        yaw_rate = ctypes.c_double(pos[4])
 
-        return robot_lib.cmdWorldPosition(self._obj, x, y, z, 0, 0)
+        return robot_lib.cmdWorldPosition(self._obj, x, y, z, yaw, yaw_rate)
 
     def command_velocity(self,
                          vel: npt.NDArray) -> bool:
@@ -232,10 +229,10 @@ class Robot:
         vx = ctypes.c_double(vel[0])
         vy = ctypes.c_double(vel[1])
         vz = ctypes.c_double(vel[2])
-        # yaw = ctypes.c_double(vel[2])
+        yaw = ctypes.c_double(vel[3])
         yaw_rate = ctypes.c_double(vel[4])
 
-        return robot_lib.cmdWorldVelocity(self._obj, vx, vy, vz, 0, yaw_rate)
+        return robot_lib.cmdWorldVelocity(self._obj, vx, vy, vz, yaw, yaw_rate)
 
     def command_acceleration(self,
                              acc: npt.NDArray) -> bool:

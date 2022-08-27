@@ -52,6 +52,18 @@ class Robot:
         """
         return robot_lib.arm(self._obj)
 
+    def get_current_timestamp(self) -> np.float128:
+        """Get the times in nanoseconds for which robot has been working
+
+        Arguments:
+            None
+
+        Returns:
+            time in nanoseconds
+
+        """
+        return np.float128( robot_lib.get_current_timestamp(self._obj) )
+
     def disarm(self) -> bool:
         """Disarms the robot.
 
@@ -196,6 +208,20 @@ class Robot:
 
         return robot_lib.setCmdMode(self._obj, cmode)
 
+    def use_external_controller(self,
+                         mode: bool = True) -> bool:
+        """Sets the flag for using the Geometric Control module inside PX4 bypassing the default PID controller
+
+        Arguments
+            mode: whether or not it should use the custom Geometric Controller. True: use Geometric, False: use default PID
+
+        Returns
+            Success / error flag
+
+        """
+
+        return robot_lib.useExternalController(self._obj, mode)
+
     def command_position(self,
                          pos: npt.NDArray) -> bool:
         """Commands the new position setpoint for the robot.
@@ -318,6 +344,8 @@ class Robot:
         robot_lib.disarm.restype = ctypes.c_bool
         robot_lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
         robot_lib.cmdOffboardMode.restype = ctypes.c_bool
+        robot_lib.get_current_timestamp.argtypes = [ctypes.c_void_p]
+        robot_lib.get_current_timestamp.restype = ctypes.c_ulonglong
         # robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
         # robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
         # robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]

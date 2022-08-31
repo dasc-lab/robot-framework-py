@@ -52,17 +52,22 @@ class Robot:
         """
         return robot_lib.arm(self._obj)
 
-    def get_current_timestamp(self) -> np.float128:
-        """Get the times in nanoseconds for which robot has been working
+    def get_current_timestamp(self, 
+                            px4_sync: bool = True, mode: int = 1) -> np.float128:
+        """Get the times in milliseconds for which robot has been working
 
         Arguments:
-            None
+            px4_sync: True if want time to be synced with px4. False is just want ROS time back
+                      Note that px4 syncing is done per robot. time across multiple pixhawks is not synced and as such for multi robot experiments
+                      with time specifications, it might be better to use ROS time
+            mode: 0 for microseconds
+                  1 for milliseconds
 
         Returns:
-            time in nanoseconds
+            time in milliseconds
 
         """
-        return np.float128( robot_lib.get_current_timestamp(self._obj) )
+        return np.float128( robot_lib.get_current_timestamp(self._obj, px4_sync, mode) )
 
     def disarm(self) -> bool:
         """Disarms the robot.

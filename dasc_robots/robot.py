@@ -52,6 +52,21 @@ class Robot:
         """
         return robot_lib.arm(self._obj)
 
+    def get_current_timestamp_us(self, 
+                            px4_sync: bool = True) -> np.float128:
+        """Get the times in microseconds for which robot has been working
+
+        Arguments:
+            px4_sync: True if want time to be synced with px4. False is just want ROS time back
+                      Note that px4 syncing is done per robot. time across multiple pixhawks is not synced and as such for multi robot experiments
+                      with time specifications, it might be better to use ROS time
+
+        Returns:
+            time in microseconds
+
+        """
+        return np.float128( robot_lib.get_current_timestamp_us(self._obj, px4_sync) )
+
     def disarm(self) -> bool:
         """Disarms the robot.
 
@@ -196,6 +211,20 @@ class Robot:
 
         return robot_lib.setCmdMode(self._obj, cmode)
 
+    def use_external_controller(self,
+                         mode: bool = True) -> bool:
+        """Sets the flag for using the Geometric Control module inside PX4 bypassing the default PID controller
+
+        Arguments
+            mode: whether or not it should use the custom Geometric Controller. True: use Geometric, False: use default PID
+
+        Returns
+            Success / error flag
+
+        """
+
+        return robot_lib.useExternalController(self._obj, mode)
+
     def command_position(self,
                          pos: npt.NDArray) -> bool:
         """Commands the new position setpoint for the robot.
@@ -318,6 +347,8 @@ class Robot:
         robot_lib.disarm.restype = ctypes.c_bool
         robot_lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
         robot_lib.cmdOffboardMode.restype = ctypes.c_bool
+        robot_lib.get_current_timestamp_us.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+        robot_lib.get_current_timestamp_us.restype = ctypes.c_ulonglong
         # robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
         # robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
         # robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]

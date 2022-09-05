@@ -23,6 +23,7 @@ setup(
             'ex_rover_test = dasc_robot_py.ex_rover_test:main',
             'ex_drone_hover = dasc_robot_py.ex_drone_hover:main',
             'ex_rover_test_classes = dasc_robot_py.ex_rover_test_classes:main',
+            'ex_drone_control_geometric = dasc_robot_py.ex_drone_control_geometric:main',
         ],
     },
 )

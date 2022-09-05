@@ -46,15 +46,15 @@ def main(args=None):
     robot.use_external_controller(mode = False)
     robot.arm()
 
-    start = robot.get_current_timestamp(px4_sync = True, mode = 1)
+    start = robot.get_current_timestamp_us(px4_sync = True)
 
     i = 0
     while rclpy.ok():
-        elapsed = robot.get_current_timestamp(px4_sync = True, mode = 1) - start
+        elapsed = robot.get_current_timestamp_us(px4_sync = True) - start
         print(f"elapsed:{elapsed }")
-        if ( elapsed <= 10000 ):
+        if ( elapsed <= 10000 * 1000 ):
             robot.command_position( np.array([0, 0, 0.5, 0, 0]) )
-        elif ( elapsed <= 15000 ):
+        elif ( elapsed <= 15000 * 1000 ):
             robot.command_position( np.array([0, 0, 0, 0, 0]) )
         else:
             break

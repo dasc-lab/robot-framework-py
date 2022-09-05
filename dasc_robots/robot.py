@@ -52,22 +52,20 @@ class Robot:
         """
         return robot_lib.arm(self._obj)
 
-    def get_current_timestamp(self, 
-                            px4_sync: bool = True, mode: int = 1) -> np.float128:
-        """Get the times in milliseconds for which robot has been working
+    def get_current_timestamp_us(self, 
+                            px4_sync: bool = True) -> np.float128:
+        """Get the times in microseconds for which robot has been working
 
         Arguments:
             px4_sync: True if want time to be synced with px4. False is just want ROS time back
                       Note that px4 syncing is done per robot. time across multiple pixhawks is not synced and as such for multi robot experiments
                       with time specifications, it might be better to use ROS time
-            mode: 0 for microseconds
-                  1 for milliseconds
 
         Returns:
-            time in milliseconds
+            time in microseconds
 
         """
-        return np.float128( robot_lib.get_current_timestamp(self._obj, px4_sync, mode) )
+        return np.float128( robot_lib.get_current_timestamp_us(self._obj, px4_sync) )
 
     def disarm(self) -> bool:
         """Disarms the robot.
@@ -349,8 +347,8 @@ class Robot:
         robot_lib.disarm.restype = ctypes.c_bool
         robot_lib.cmdOffboardMode.argtypes = [ctypes.c_void_p]
         robot_lib.cmdOffboardMode.restype = ctypes.c_bool
-        robot_lib.get_current_timestamp.argtypes = [ctypes.c_void_p]
-        robot_lib.get_current_timestamp.restype = ctypes.c_ulonglong
+        robot_lib.get_current_timestamp_us.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+        robot_lib.get_current_timestamp_us.restype = ctypes.c_ulonglong
         # robot_lib.getWorldPosition.argtypes = [ctypes.c_void_p]
         # robot_lib.getWorldPosition.restype = ctypes.POINTER(ctypes.c_double)
         # robot_lib.getWorldVelocity.argtypes = [ctypes.c_void_p]
